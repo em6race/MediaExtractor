@@ -180,12 +180,24 @@ for file in "${filesToMove[@]}"; do
 
     destPath="$partDir/$baseName"
     
-    # Duplicate protection
+    # Duplicate protection with size check
+    skipFile=false
     counter=1
-    while [ -e "$destPath" ]; then
+    while [ -e "$destPath" ]; do
+        existingSize=$(get_size "$destPath")
+        if [ "$existingSize" -eq "$fileSize" ]; then
+            skipFile=true
+            break
+        fi
         destPath="$partDir/${fileName}_${counter}${extension}"
         counter=$((counter + 1))
     done
+
+    if [ "$skipFile" = true ]; then
+        movedBytes=$((movedBytes + fileSize))
+        currentSize=$((currentSize + fileSize))
+        continue
+    fi
 
     if [ "$isCopy" = true ]; then
         cp "$file" "$destPath" 2>/dev/null

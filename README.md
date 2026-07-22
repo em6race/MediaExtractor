@@ -3,11 +3,12 @@
 A fast, lightweight, and interactive script designed to extract photos and videos from messy, junk-filled folders on old computers. It works entirely offline and uses native OS components for maximum speed and compatibility.
 
 ## 🚀 Features
-- **Zero Installation**: Runs natively on Windows (Batch/PowerShell), macOS, and Linux (Bash). No Python, Node.js, or external dependencies required.
-- **Graphical Folder Selection**: Uses a native popup to easily select the target directory (WinForms on Windows, AppleScript on macOS, Zenity on Linux).
-- **Smart Chunking**: Automatically splits the extracted media into folders of a custom size (e.g., 10 GB) so you can easily transfer them via USB flash drives. Or disable chunking to put everything into one folder.
-- **Year & Type Sorting**: Optionally sort all extracted photos and videos into subfolders based on the year they were created and their media type (e.g., `2015/Photos`, `2015/Videos`).
-- **Duplicate Protection**: Automatically renames duplicate files (e.g., `IMG_001.jpg` -> `IMG_001_1.jpg`) instead of overwriting them.
+- **Zero Installation**: Runs strictly on OS-native commands (Batch/PowerShell for Windows, Bash for Mac/Linux).
+- **Chunk Splitting**: Can split the extracted media into separate numbered folders (e.g., 10GB chunks) so they can be easily moved onto small external flash drives.
+- **Chronological Sorting**: Option to sort media automatically into year-based subfolders by analyzing file modification dates.
+- **Type Separation**: Separates photos and videos into different folders automatically.
+- **Smart Duplicate Prevention**: Compares files by exact byte size. If a perfect duplicate is found, it skips it to save space. If names match but sizes differ, it safely renames the file to keep both.
+- **Safe Mode**: Can copy files instead of moving them, leaving the original folder completely untouched.
 - **Live Progress & ETA**: Displays a custom character-based progress bar and estimated time of completion directly in the terminal.
 - **Safe Cleanup**: Asks for explicit user confirmation before permanently deleting the junk files left behind.
 

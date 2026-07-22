@@ -175,22 +175,34 @@ foreach ($file in $filesToMove) {
         New-Item -ItemType Directory -Path $partDir -Force | Out-Null
     }
 
-    $baseName = $file.BaseName
-    $extension = $file.Extension
     $destPath = Join-Path $partDir $file.Name
+    $baseName = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
+    $extension = [System.IO.Path]::GetExtension($file.Name)
     
+    $skipFile = $false
     $counter = 1
-    # Duplicate protection
+    # Duplicate protection with exact size match
     while (Test-Path $destPath) {
+        $existingFile = Get-Item $destPath
+        if ($existingFile.Length -eq $file.Length) {
+            $skipFile = $true
+            break
+        }
         $destPath = Join-Path $partDir "$baseName`_$counter$extension"
         $counter++
     }
 
+    if ($skipFile) {
+        $movedBytes += $file.Length
+        $currentSize += $file.Length
+        continue
+    }
+
     try {
         if ($isCopy) {
-            Copy-Item -Path $file.FullName -Destination $destPath -Force
+            Copy-Item -Path $file.FullName -Destination $destPath -Force -ErrorAction SilentlyContinue
         } else {
-            Move-Item -Path $file.FullName -Destination $destPath -Force
+            Move-Item -Path $file.FullName -Destination $destPath -Force -ErrorAction SilentlyContinue
         }
         $movedBytes += $file.Length
         $currentSize += $file.Length
