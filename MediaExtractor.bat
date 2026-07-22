@@ -106,8 +106,28 @@ foreach ($f in $filesToMove) { $totalBytes += $f.Length }
 
 Write-Host "Photos and videos found: $totalFiles" -ForegroundColor Green
 Write-Host "Total size: $([math]::Round($totalBytes / 1MB, 2)) MB" -ForegroundColor Green
-Write-Host "Starting transfer..." -ForegroundColor Cyan
-Write-Host "--------------------------------------------------------" -ForegroundColor Cyan
+Write-Host ""
+Write-Host ""
+Write-Host ""
+Write-Host ""
+Write-Host ""
+Write-Host ""
+Write-Host ""
+Write-Host ""
+Write-Host ""
+Write-Host ""
+Write-Host ""
+Write-Host ""
+try {
+    $uiTop = [Console]::CursorTop - 12
+    [Console]::CursorVisible = $false
+} catch {
+    $uiTop = 0
+}
+
+$spinnerChars = @('|', '/', '-', '\')
+$spinnerIdx = 0
+$lastProcessed = @()
 
 $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 $movedBytes = 0L
@@ -201,13 +221,51 @@ foreach ($file in $filesToMove) {
     $empty = 20 - $filled
     $bar = ("#" * $filled) + ("-" * $empty)
     
-    # File log
-    $logName = $file.Name
-    if ($logName.Length -gt 35) { $logName = $logName.Substring(0, 32) + "..." }
+    # Add to last processed array
+    $lastProcessed += $file.Name
+    if ($lastProcessed.Count -gt 7) {
+        $lastProcessed = $lastProcessed[1..7]
+    }
     
-    Write-Host "[$bar] $percent% | ETA: $etaStr | File: $logName" -ForegroundColor Cyan
+    # Color logic
+    if ($percent -lt 34) { $barColor = "Red" }
+    elseif ($percent -lt 67) { $barColor = "Yellow" }
+    else { $barColor = "Green" }
+    
+    $spinChar = $spinnerChars[$spinnerIdx % 4]
+    $spinnerIdx++
+    
+    # Draw UI
+    try {
+        [Console]::SetCursorPosition(0, $uiTop)
+        
+        Write-Host "Starting transfer...                                        " -ForegroundColor Cyan
+        Write-Host "--------------------------------------------------------    " -ForegroundColor Cyan
+        
+        Write-Host "[$spinChar] $percent% [" -NoNewline -ForegroundColor Cyan
+        Write-Host $bar -NoNewline -ForegroundColor $barColor
+        Write-Host "] ETA: $etaStr | Total: $totalFiles        " -ForegroundColor Cyan
+        
+        Write-Host "--------------------------------------------------------    " -ForegroundColor Cyan
+        Write-Host "Recently processed (Last 7):                                " -ForegroundColor Cyan
+        
+        for ($i = 0; $i -lt 7; $i++) {
+            if ($i -lt $lastProcessed.Count) {
+                $name = $lastProcessed[$i]
+                if ($name.Length -gt 50) { $name = $name.Substring(0, 47) + "..." }
+                $name = $name.PadRight(52)
+                Write-Host "  > $name" -ForegroundColor Green
+            } else {
+                Write-Host "                                                        "
+            }
+        }
+    } catch {
+        # Fallback if console manipulation fails (e.g., redirected output)
+        Write-Host "[$spinChar] $percent% | ETA: $etaStr | File: $($file.Name)" -ForegroundColor Cyan
+    }
 }
 
+try { [Console]::CursorVisible = $true } catch {}
 $stopwatch.Stop()
 
 Write-Host "--------------------------------------------------------" -ForegroundColor Cyan

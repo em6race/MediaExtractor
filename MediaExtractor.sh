@@ -129,8 +129,12 @@ done
 totalMB=$(awk "BEGIN {printf \"%.2f\", $totalBytes/1048576}")
 echo -e "${GREEN}Photos and videos found: $totalFiles${NC}"
 echo -e "${GREEN}Total size: $totalMB MB${NC}"
-echo -e "${CYAN}Starting transfer...${NC}"
-echo -e "${CYAN}--------------------------------------------------------${NC}"
+spinnerChars=('|' '/' '-' '\')
+spinnerIdx=0
+lastProcessed=()
+
+# Setup empty lines for UI
+for i in {1..12}; do echo ""; done
 
 movedBytes=0
 startTime=$(date +%s)
@@ -223,10 +227,43 @@ for file in "${filesToMove[@]}"; do
     for ((i=0; i<filled; i++)); do bar="${bar}#"; done
     for ((i=0; i<empty; i++)); do bar="${bar}-"; done
 
-    logName="$baseName"
-    if [ ${#logName} -gt 35 ]; then logName="${logName:0:32}..."; fi
+    # Color logic
+    if [ "$percent" -lt 34 ]; then
+        barColor="${RED}"
+    elif [ "$percent" -lt 67 ]; then
+        barColor="${YELLOW}"
+    else
+        barColor="${GREEN}"
+    fi
 
-    echo -ne "\r\033[K[${CYAN}${bar}${NC}] $percent% | ETA: $etaStr | File: $logName"
+    spinChar="${spinnerChars[$((spinnerIdx % 4))]}"
+    spinnerIdx=$((spinnerIdx + 1))
+    
+    # Add to array
+    lastProcessed+=("$baseName")
+    if [ ${#lastProcessed[@]} -gt 7 ]; then
+        lastProcessed=("${lastProcessed[@]:1}")
+    fi
+    
+    # UI Drawing
+    # Move cursor up 12 lines
+    printf "\033[12A"
+    
+    printf "\033[K${CYAN}Starting transfer...${NC}\n"
+    printf "\033[K${CYAN}--------------------------------------------------------${NC}\n"
+    printf "\033[K${CYAN}[${spinChar}] ${percent}%% [${barColor}${bar}${CYAN}] ETA: ${etaStr} | Total: ${totalFiles}${NC}\n"
+    printf "\033[K${CYAN}--------------------------------------------------------${NC}\n"
+    printf "\033[K${CYAN}Recently processed (Last 7):${NC}\n"
+    
+    for i in {0..6}; do
+        if [ "$i" -lt "${#lastProcessed[@]}" ]; then
+            name="${lastProcessed[$i]}"
+            if [ ${#name} -gt 50 ]; then name="${name:0:47}..."; fi
+            printf "\033[K  ${GREEN}> %-50s${NC}\n" "$name"
+        else
+            printf "\033[K\n"
+        fi
+    done
 done
 
 echo ""
