@@ -195,6 +195,9 @@ foreach ($file in $filesToMove) {
     if ($skipFile) {
         $movedBytes += $file.Length
         $currentSize += $file.Length
+        if (-not $isCopy) {
+            Remove-Item -Path $file.FullName -Force -ErrorAction SilentlyContinue
+        }
         continue
     }
 
