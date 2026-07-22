@@ -18,7 +18,7 @@ goto :eof
 Add-Type -AssemblyName System.Windows.Forms
 
 $photoExts = @('.jpg','.jpeg','.png','.gif','.bmp','.tiff','.raw','.webp','.heic')
-$videoExts = @('.mp4','.avi','.mkv','.mov','.wmv','.flv','.webm','.m4v')
+$videoExts = @('.mp4','.avi','.mkv','.mov','.wmv','.flv','.webm','.m4v','.3gp')
 $exts = $photoExts + $videoExts
 
 Write-Host "==========================================================" -ForegroundColor Cyan

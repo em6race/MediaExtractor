@@ -18,7 +18,7 @@ A fast, lightweight, and interactive script designed to extract photos and video
 
 ## 📸 Supported Formats
 - **Photos**: `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.tiff`, `.raw`, `.webp`, `.heic`
-- **Videos**: `.mp4`, `.avi`, `.mkv`, `.mov`, `.wmv`, `.flv`, `.webm`, `.m4v`
+- **Videos**: `.mp4`, `.avi`, `.mkv`, `.mov`, `.wmv`, `.flv`, `.webm`, `.m4v`, `.3gp`
 
 ## 🛠 How to Use
 

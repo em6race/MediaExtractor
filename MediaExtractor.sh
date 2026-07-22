@@ -92,7 +92,7 @@ mapfile -d $'\0' filesToMove < <(find "$targetDir" -type f \( \
     -iname "*.bmp" -o -iname "*.tiff" -o -iname "*.raw" -o -iname "*.webp" -o \
     -iname "*.heic" -o -iname "*.mp4" -o -iname "*.avi" -o -iname "*.mkv" -o \
     -iname "*.mov" -o -iname "*.wmv" -o -iname "*.flv" -o -iname "*.webm" -o \
-    -iname "*.m4v" \) -print0 2>/dev/null)
+    -iname "*.m4v" -o -iname "*.3gp" \) -print0 2>/dev/null)
 
 totalFiles=${#filesToMove[@]}
 if [ "$totalFiles" -eq 0 ]; then
@@ -115,7 +115,7 @@ get_type() {
     ext=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
     case "$ext" in
         jpg|jpeg|png|gif|bmp|tiff|raw|webp|heic) echo "Photos" ;;
-        mp4|avi|mkv|mov|wmv|flv|webm|m4v) echo "Videos" ;;
+        mp4|avi|mkv|mov|wmv|flv|webm|m4v|3gp) echo "Videos" ;;
         *) echo "Other" ;;
     esac
 }
