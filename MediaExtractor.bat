@@ -297,7 +297,7 @@ if ($isSplitting -and $currentPart -gt 1) {
 if (-not $isCopy) {
     Write-Host "--------------------------------------------------------" -ForegroundColor Cyan
     Write-Host "WARNING: Only junk files remain in the old folder ($targetDir)." -ForegroundColor Red
-    Write-Host "[Final Step] Do you want to permanently delete the original folder (containing only junk)? (Y/N, default N): " -NoNewline -ForegroundColor Yellow
+    Write-Host "[5/5] Do you want to permanently delete the original folder (containing only junk)? (Y/N, default N): " -NoNewline -ForegroundColor Yellow
 
     $response = Read-Host ""
     if ($response -match '^[Yy]') {

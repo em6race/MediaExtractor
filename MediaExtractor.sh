@@ -302,7 +302,7 @@ fi
 if [ "$isCopy" = false ]; then
     echo -e "${CYAN}--------------------------------------------------------${NC}"
     echo -e "${RED}WARNING: Only junk files remain in the old folder ($targetDir).${NC}"
-    echo -ne "${YELLOW}[Final Step] Do you want to permanently delete the original folder (containing only junk)? (Y/N, default N): ${NC}"
+    echo -ne "${YELLOW}[5/5] Do you want to permanently delete the original folder (containing only junk)? (Y/N, default N): ${NC}"
     read response
 
     if [[ "$response" =~ ^[Yy] ]]; then
