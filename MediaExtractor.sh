@@ -16,7 +16,8 @@ echo -e "${CYAN}==========================================================${NC}"
 echo ""
 
 # Ask for copy vs move
-read -p "Do you want to COPY files instead of moving them? (Y/N): " copyChoice
+echo -ne "${YELLOW}[1/4] Do you want to COPY files instead of moving them? (Y/N, default N): ${NC}"
+read copyChoice
 isCopy=false
 if [[ "$copyChoice" =~ ^[Yy] ]]; then
     isCopy=true
@@ -26,12 +27,14 @@ else
 fi
 
 # Ask for splitting
-read -p "Do you want to split the saved files into parts by size? (Y/N): " splitChoice
+echo -ne "${YELLOW}[2/4] Do you want to split the saved files into parts by size? (Y/N, default N): ${NC}"
+read splitChoice
 isSplitting=false
 maxSize=9223372036854775807 # huge number
 
 if [[ "$splitChoice" =~ ^[Yy] ]]; then
-    read -p "Enter the maximum size for each part in Gigabytes (e.g., 5, 10, 16) or 0 for no splitting: " sizeInput
+    echo -ne "${YELLOW}  > Enter the maximum size for each part in GB (e.g., 5, 10, 16): ${NC}"
+    read sizeInput
     if [[ "$sizeInput" =~ ^[0-9]+$ ]] && [ "$sizeInput" -gt 0 ]; then
         maxSize=$((sizeInput * 1024 * 1024 * 1024))
         isSplitting=true
@@ -44,7 +47,8 @@ else
 fi
 
 # Ask for sorting
-read -p "Do you want to sort files into subfolders by Year? (Y/N): " sortChoice
+echo -ne "${YELLOW}[3/4] Do you want to sort files into subfolders by Year? (Y/N, default N): ${NC}"
+read sortChoice
 isSorting=false
 if [[ "$sortChoice" =~ ^[Yy] ]]; then
     isSorting=true
@@ -56,6 +60,7 @@ echo ""
 
 # Folder selection
 targetDir=""
+echo -e "${YELLOW}[4/4] Please select the folder with old files to clean${NC}"
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # Try osascript for macOS
     targetDir=$(osascript -e 'set folderPath to choose folder with prompt "Select the folder with old files to clean"' -e 'POSIX path of folderPath' 2>/dev/null)
@@ -297,7 +302,8 @@ fi
 if [ "$isCopy" = false ]; then
     echo -e "${CYAN}--------------------------------------------------------${NC}"
     echo -e "${RED}WARNING: Only junk files remain in the old folder ($targetDir).${NC}"
-    read -p "Delete junk files PERMANENTLY? (Y/N): " response
+    echo -ne "${YELLOW}[Final Step] Do you want to permanently delete the original folder (containing only junk)? (Y/N, default N): ${NC}"
+    read response
 
     if [[ "$response" =~ ^[Yy] ]]; then
         echo -e "${CYAN}Deleting junk...${NC}"

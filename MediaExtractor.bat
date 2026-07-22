@@ -27,7 +27,8 @@ Write-Host "   With logs, chunking, year sorting, and media type      " -Foregro
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host ""
 
-$copyChoice = Read-Host "Do you want to COPY files instead of moving them? (Y/N)"
+Write-Host "[1/4] " -NoNewline -ForegroundColor Yellow
+$copyChoice = Read-Host "Do you want to COPY files instead of moving them? (Y/N, default N)"
 $isCopy = ($copyChoice -match '^[Yy]')
 if ($isCopy) {
     Write-Host "-> Files will be COPIED. Original files will remain untouched." -ForegroundColor Green
@@ -35,12 +36,14 @@ if ($isCopy) {
     Write-Host "-> Files will be MOVED. Original files will be removed from the source folder." -ForegroundColor Green
 }
 
-$splitChoice = Read-Host "Do you want to split the saved files into parts by size? (Y/N)"
+Write-Host "[2/4] " -NoNewline -ForegroundColor Yellow
+$splitChoice = Read-Host "Do you want to split the saved files into parts by size? (Y/N, default N)"
 $maxSize = [long]::MaxValue
 $isSplitting = $false
 
 if ($splitChoice -match '^[Yy]') {
-    $sizeInput = Read-Host "Enter the maximum size for each part in Gigabytes (e.g., 5, 10, 16) or 0 for no splitting"
+    Write-Host "[3/4] " -NoNewline -ForegroundColor Yellow
+    $sizeInput = Read-Host "Enter the maximum size for each part in Gigabytes (e.g., 5, 10, 16)"
     $sizeGB = 0
     if ([int]::TryParse($sizeInput, [ref]$sizeGB) -and $sizeGB -gt 0) {
         $maxSize = $sizeGB * 1024L * 1024L * 1024L
@@ -53,7 +56,8 @@ if ($splitChoice -match '^[Yy]') {
     Write-Host "-> Files will NOT be split." -ForegroundColor Green
 }
 
-$sortChoice = Read-Host "Do you want to sort files into subfolders by Year? (Y/N)"
+Write-Host "[4/4] " -NoNewline -ForegroundColor Yellow
+$sortChoice = Read-Host "Do you want to sort files into subfolders by Year? (Y/N, default N)"
 $isSorting = ($sortChoice -match '^[Yy]')
 if ($isSorting) {
     Write-Host "-> Files will be sorted by Year." -ForegroundColor Green
@@ -293,9 +297,9 @@ if ($isSplitting -and $currentPart -gt 1) {
 if (-not $isCopy) {
     Write-Host "--------------------------------------------------------" -ForegroundColor Cyan
     Write-Host "WARNING: Only junk files remain in the old folder ($targetDir)." -ForegroundColor Red
-    Write-Host "Type 'Y' and press Enter to DELETE junk files PERMANENTLY." -ForegroundColor Yellow
+    Write-Host "[Final Step] Do you want to permanently delete the original folder (containing only junk)? (Y/N, default N): " -NoNewline -ForegroundColor Yellow
 
-    $response = Read-Host "Delete junk files? (Y/N)"
+    $response = Read-Host ""
     if ($response -match '^[Yy]') {
         Write-Host "Deleting junk..." -ForegroundColor Cyan
         Remove-Item -Path $targetDir -Recurse -Force
