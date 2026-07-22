@@ -20,8 +20,8 @@ Add-Type -AssemblyName System.Windows.Forms
 $exts = @('.jpg','.jpeg','.png','.gif','.bmp','.tiff','.raw','.webp','.heic','.mp4','.avi','.mkv','.mov','.wmv','.flv','.webm','.m4v')
 
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "   Media Extractor Script (all files into one folder)     " -ForegroundColor Cyan
-Write-Host "   With logs, progress bar, and custom chunking           " -ForegroundColor Cyan
+Write-Host "   Media Extractor Script                                 " -ForegroundColor Cyan
+Write-Host "   With logs, progress bar, chunking, and year sorting    " -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -37,10 +37,18 @@ if ($splitChoice -match '^[Yy]') {
         $isSplitting = $true
         Write-Host "-> Files will be split into parts of up to $sizeGB GB." -ForegroundColor Green
     } else {
-        Write-Host "-> Files will NOT be split. All files will go into a single folder." -ForegroundColor Green
+        Write-Host "-> Files will NOT be split." -ForegroundColor Green
     }
 } else {
-    Write-Host "-> Files will NOT be split. All files will go into a single folder." -ForegroundColor Green
+    Write-Host "-> Files will NOT be split." -ForegroundColor Green
+}
+
+$sortChoice = Read-Host "Do you want to sort files into subfolders by Year? (Y/N)"
+$isSorting = ($sortChoice -match '^[Yy]')
+if ($isSorting) {
+    Write-Host "-> Files will be sorted by Year." -ForegroundColor Green
+} else {
+    Write-Host "-> Files will NOT be sorted by Year." -ForegroundColor Green
 }
 
 Write-Host ""
@@ -102,9 +110,25 @@ foreach ($file in $filesToMove) {
     }
 
     if ($isSplitting) {
-        $partDir = Join-Path $saveBaseDir "Part_$currentPart"
+        $baseDestDir = Join-Path $saveBaseDir "Part_$currentPart"
     } else {
-        $partDir = Join-Path $saveBaseDir "All_Media"
+        $baseDestDir = Join-Path $saveBaseDir "All_Media"
+    }
+
+    # Sorting by Year logic
+    if ($isSorting) {
+        # Use the oldest date between CreationTime and LastWriteTime for better accuracy with photos
+        if ($file.CreationTime -lt $file.LastWriteTime) {
+            $dateToUse = $file.CreationTime
+        } else {
+            $dateToUse = $file.LastWriteTime
+        }
+        $year = $dateToUse.Year
+        if ($year -lt 1980 -or $year -gt 2050) { $year = "Unknown_Year" }
+        
+        $partDir = Join-Path $baseDestDir $year.ToString()
+    } else {
+        $partDir = $baseDestDir
     }
 
     if (-not (Test-Path $partDir)) {
