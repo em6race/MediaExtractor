@@ -33,11 +33,12 @@ A fast, lightweight, and interactive script designed to extract photos and video
 4. Run it: `./MediaExtractor.sh` (or `bash MediaExtractor.sh`)
 
 ### Execution Flow
-1. The terminal will ask if you want to split files into chunks (e.g., 10GB for flash drives). Enter `Y` or `N`.
-2. It will then ask if you want to sort files into subfolders by year. Enter `Y` or `N`.
-3. A graphical folder selection window will appear (or a terminal prompt on some Linux setups). Choose the folder you want to clean.
-4. The script will scan the folder and move all media files to a new folder named `Saved_Media_[YourFolderName]` located next to the original folder.
-5. Once the transfer is complete, the script will ask if you want to permanently delete the original folder (which now only contains junk). Type `Y` to delete, or close the terminal/press Enter to keep it.
+1. The terminal will ask if you want to COPY files instead of moving them. Enter `Y` to copy (keep original files) or `N` to move.
+2. It will ask if you want to split files into chunks (e.g., 10GB for flash drives). Enter `Y` or `N`.
+3. It will then ask if you want to sort files into subfolders by year. Enter `Y` or `N`.
+4. A graphical folder selection window will appear (or a terminal prompt on some Linux setups). Choose the folder you want to clean.
+5. The script will scan the folder and move/copy all media files to a new folder named `Saved_Media_[YourFolderName]` located next to the original folder.
+6. Once the transfer is complete (if you chose to move files), the script will ask if you want to permanently delete the original folder (which now only contains junk). Type `Y` to delete, or close the terminal/press Enter to keep it.
 
 ## 🛡 Security & Offline Use
 Because these scripts utilize pure OS-native APIs, they do not connect to the internet. This makes them completely safe to use on old, offline, or heavily infected machines without risking network-based malware transmission. They effectively act as filters, extracting only safe media extensions and leaving executable viruses (`.exe`, `.vbs`, `.sh`) behind to be deleted.

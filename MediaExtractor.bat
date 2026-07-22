@@ -27,6 +27,14 @@ Write-Host "   With logs, chunking, year sorting, and media type      " -Foregro
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host ""
 
+$copyChoice = Read-Host "Do you want to COPY files instead of moving them? (Y/N)"
+$isCopy = ($copyChoice -match '^[Yy]')
+if ($isCopy) {
+    Write-Host "-> Files will be COPIED. Original files will remain untouched." -ForegroundColor Green
+} else {
+    Write-Host "-> Files will be MOVED. Original files will be removed from the source folder." -ForegroundColor Green
+}
+
 $splitChoice = Read-Host "Do you want to split the saved files into parts by size? (Y/N)"
 $maxSize = [long]::MaxValue
 $isSplitting = $false
@@ -158,11 +166,15 @@ foreach ($file in $filesToMove) {
     }
 
     try {
-        Move-Item -Path $file.FullName -Destination $destPath -Force
+        if ($isCopy) {
+            Copy-Item -Path $file.FullName -Destination $destPath -Force
+        } else {
+            Move-Item -Path $file.FullName -Destination $destPath -Force
+        }
         $movedBytes += $file.Length
         $currentSize += $file.Length
     } catch {
-        Write-Host "Move error: $($file.FullName)" -ForegroundColor Red
+        Write-Host "Transfer error: $($file.FullName)" -ForegroundColor Red
     }
     
     # Calculate ETA
@@ -204,15 +216,18 @@ Write-Host "All your files have been saved to: $saveBaseDir" -ForegroundColor Ye
 if ($isSplitting -and $currentPart -gt 1) {
     Write-Host "Files were automatically split into $currentPart part(s)." -ForegroundColor Magenta
 }
-Write-Host "--------------------------------------------------------" -ForegroundColor Cyan
-Write-Host "WARNING: Only junk files remain in the old folder ($targetDir)." -ForegroundColor Red
-Write-Host "Type 'Y' and press Enter to DELETE junk files PERMANENTLY." -ForegroundColor Yellow
 
-$response = Read-Host "Delete junk files? (Y/N)"
-if ($response -match '^[Yy]') {
-    Write-Host "Deleting junk..." -ForegroundColor Cyan
-    Remove-Item -Path $targetDir -Recurse -Force
-    Write-Host "Junk successfully deleted!" -ForegroundColor Green
-} else {
-    Write-Host "Deletion cancelled. The old folder has been kept." -ForegroundColor Yellow
+if (-not $isCopy) {
+    Write-Host "--------------------------------------------------------" -ForegroundColor Cyan
+    Write-Host "WARNING: Only junk files remain in the old folder ($targetDir)." -ForegroundColor Red
+    Write-Host "Type 'Y' and press Enter to DELETE junk files PERMANENTLY." -ForegroundColor Yellow
+
+    $response = Read-Host "Delete junk files? (Y/N)"
+    if ($response -match '^[Yy]') {
+        Write-Host "Deleting junk..." -ForegroundColor Cyan
+        Remove-Item -Path $targetDir -Recurse -Force
+        Write-Host "Junk successfully deleted!" -ForegroundColor Green
+    } else {
+        Write-Host "Deletion cancelled. The old folder has been kept." -ForegroundColor Yellow
+    }
 }

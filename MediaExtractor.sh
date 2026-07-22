@@ -15,6 +15,16 @@ echo -e "${CYAN}   With logs, chunking, year sorting, and media type      ${NC}"
 echo -e "${CYAN}==========================================================${NC}"
 echo ""
 
+# Ask for copy vs move
+read -p "Do you want to COPY files instead of moving them? (Y/N): " copyChoice
+isCopy=false
+if [[ "$copyChoice" =~ ^[Yy] ]]; then
+    isCopy=true
+    echo -e "-> ${GREEN}Files will be COPIED. Original files will remain untouched.${NC}"
+else
+    echo -e "-> ${GREEN}Files will be MOVED. Original files will be removed from the source folder.${NC}"
+fi
+
 # Ask for splitting
 read -p "Do you want to split the saved files into parts by size? (Y/N): " splitChoice
 isSplitting=false
@@ -167,7 +177,12 @@ for file in "${filesToMove[@]}"; do
         counter=$((counter + 1))
     done
 
-    mv "$file" "$destPath" 2>/dev/null
+    if [ "$isCopy" = true ]; then
+        cp "$file" "$destPath" 2>/dev/null
+    else
+        mv "$file" "$destPath" 2>/dev/null
+    fi
+    
     movedBytes=$((movedBytes + fileSize))
     currentSize=$((currentSize + fileSize))
 
@@ -221,14 +236,17 @@ echo -e "${YELLOW}All your files have been saved to: $saveBaseDir${NC}"
 if [ "$isSplitting" = true ] && [ "$currentPart" -gt 1 ]; then
     echo -e "${MAGENTA}Files were automatically split into $currentPart part(s).${NC}"
 fi
-echo -e "${CYAN}--------------------------------------------------------${NC}"
-echo -e "${RED}WARNING: Only junk files remain in the old folder ($targetDir).${NC}"
-read -p "Delete junk files PERMANENTLY? (Y/N): " response
 
-if [[ "$response" =~ ^[Yy] ]]; then
-    echo -e "${CYAN}Deleting junk...${NC}"
-    rm -rf "$targetDir"
-    echo -e "${GREEN}Junk successfully deleted!${NC}"
-else
-    echo -e "${YELLOW}Deletion cancelled. The old folder has been kept.${NC}"
+if [ "$isCopy" = false ]; then
+    echo -e "${CYAN}--------------------------------------------------------${NC}"
+    echo -e "${RED}WARNING: Only junk files remain in the old folder ($targetDir).${NC}"
+    read -p "Delete junk files PERMANENTLY? (Y/N): " response
+
+    if [[ "$response" =~ ^[Yy] ]]; then
+        echo -e "${CYAN}Deleting junk...${NC}"
+        rm -rf "$targetDir"
+        echo -e "${GREEN}Junk successfully deleted!${NC}"
+    else
+        echo -e "${YELLOW}Deletion cancelled. The old folder has been kept.${NC}"
+    fi
 fi
