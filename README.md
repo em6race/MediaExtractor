@@ -6,7 +6,7 @@ A fast, lightweight, and interactive Windows Batch/PowerShell hybrid script desi
 - **Zero Installation**: Runs natively on Windows 7, 8, 10, and 11. No Python, Node.js, or external dependencies required.
 - **Graphical Folder Selection**: Uses a native Windows popup to easily select the target directory.
 - **Smart Chunking**: Automatically splits the extracted media into folders of a custom size (e.g., 10 GB) so you can easily transfer them via USB flash drives. Or disable chunking to put everything into one folder.
-- **Year-Based Sorting**: Optionally sort all extracted photos and videos into subfolders based on the year they were created (e.g., `2015`, `2021`).
+- **Year & Type Sorting**: Optionally sort all extracted photos and videos into subfolders based on the year they were created and their media type (e.g., `2015\Photos`, `2015\Videos`).
 - **Duplicate Protection**: Automatically renames duplicate files (e.g., `IMG_001.jpg` -> `IMG_001_1.jpg`) instead of overwriting them.
 - **Live Progress & ETA**: Displays a custom character-based progress bar and estimated time of completion directly in the terminal.
 - **Safe Cleanup**: Asks for explicit user confirmation before permanently deleting the junk files left behind.

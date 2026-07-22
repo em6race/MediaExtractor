@@ -17,11 +17,13 @@ goto :eof
 [System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 Add-Type -AssemblyName System.Windows.Forms
 
-$exts = @('.jpg','.jpeg','.png','.gif','.bmp','.tiff','.raw','.webp','.heic','.mp4','.avi','.mkv','.mov','.wmv','.flv','.webm','.m4v')
+$photoExts = @('.jpg','.jpeg','.png','.gif','.bmp','.tiff','.raw','.webp','.heic')
+$videoExts = @('.mp4','.avi','.mkv','.mov','.wmv','.flv','.webm','.m4v')
+$exts = $photoExts + $videoExts
 
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "   Media Extractor Script                                 " -ForegroundColor Cyan
-Write-Host "   With logs, progress bar, chunking, and year sorting    " -ForegroundColor Cyan
+Write-Host "   With logs, chunking, year sorting, and media type      " -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -115,6 +117,15 @@ foreach ($file in $filesToMove) {
         $baseDestDir = Join-Path $saveBaseDir "All_Media"
     }
 
+    $ext = $file.Extension.ToLower()
+    if ($photoExts -contains $ext) {
+        $mediaType = "Photos"
+    } elseif ($videoExts -contains $ext) {
+        $mediaType = "Videos"
+    } else {
+        $mediaType = "Other"
+    }
+
     # Sorting by Year logic
     if ($isSorting) {
         # Use the oldest date between CreationTime and LastWriteTime for better accuracy with photos
@@ -126,13 +137,13 @@ foreach ($file in $filesToMove) {
         $year = $dateToUse.Year
         if ($year -lt 1980 -or $year -gt 2050) { $year = "Unknown_Year" }
         
-        $partDir = Join-Path $baseDestDir $year.ToString()
+        $partDir = Join-Path $baseDestDir "$year\$mediaType"
     } else {
-        $partDir = $baseDestDir
+        $partDir = Join-Path $baseDestDir $mediaType
     }
 
     if (-not (Test-Path $partDir)) {
-        New-Item -ItemType Directory -Path $partDir | Out-Null
+        New-Item -ItemType Directory -Path $partDir -Force | Out-Null
     }
 
     $baseName = $file.BaseName
