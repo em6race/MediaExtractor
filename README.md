@@ -11,6 +11,11 @@ A fast, lightweight, and interactive script designed to extract photos and video
 - **Live Progress & ETA**: Displays a custom character-based progress bar and estimated time of completion directly in the terminal.
 - **Safe Cleanup**: Asks for explicit user confirmation before permanently deleting the junk files left behind.
 
+## 💻 Supported Systems
+- **Windows**: 7, 8, 8.1, 10, 11 (Runs via `MediaExtractor.bat`)
+- **macOS**: All modern versions (Runs via `MediaExtractor.sh`)
+- **Linux**: Ubuntu, Mint, Debian, Fedora, Arch, etc. (Runs via `MediaExtractor.sh`)
+
 ## 📸 Supported Formats
 - **Photos**: `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.tiff`, `.raw`, `.webp`, `.heic`
 - **Videos**: `.mp4`, `.avi`, `.mkv`, `.mov`, `.wmv`, `.flv`, `.webm`, `.m4v`
