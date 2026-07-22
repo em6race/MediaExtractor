@@ -17,8 +17,8 @@ A fast, lightweight, and interactive script designed to extract photos and video
 - **Linux**: Ubuntu, Mint, Debian, Fedora, Arch, etc. (Runs via `MediaExtractor.sh`)
 
 ## 📸 Supported Formats
-- **Photos**: `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.tiff`, `.raw`, `.webp`, `.heic`
-- **Videos**: `.mp4`, `.avi`, `.mkv`, `.mov`, `.wmv`, `.flv`, `.webm`, `.m4v`, `.3gp`
+- **Photos**: `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.tiff`, `.tif`, `.raw`, `.cr2`, `.nef`, `.orf`, `.sr2`, `.dng`, `.psd`, `.webp`, `.heic`, `.avif`, `.jp2`, `.ico`
+- **Videos**: `.mp4`, `.avi`, `.mkv`, `.mov`, `.wmv`, `.flv`, `.webm`, `.m4v`, `.3gp`, `.mpg`, `.mpeg`, `.m2ts`, `.mts`, `.ts`, `.vob`, `.rm`, `.rmvb`, `.asf`, `.divx`
 
 ## 🛠 How to Use
 

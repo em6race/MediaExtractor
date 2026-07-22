@@ -17,8 +17,8 @@ goto :eof
 [System.Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 Add-Type -AssemblyName System.Windows.Forms
 
-$photoExts = @('.jpg','.jpeg','.png','.gif','.bmp','.tiff','.raw','.webp','.heic')
-$videoExts = @('.mp4','.avi','.mkv','.mov','.wmv','.flv','.webm','.m4v','.3gp')
+$photoExts = @('.jpg','.jpeg','.png','.gif','.bmp','.tiff','.tif','.raw','.cr2','.nef','.orf','.sr2','.dng','.psd','.webp','.heic','.avif','.jp2','.ico')
+$videoExts = @('.mp4','.avi','.mkv','.mov','.wmv','.flv','.webm','.m4v','.3gp','.mpg','.mpeg','.m2ts','.mts','.ts','.vob','.rm','.rmvb','.asf','.divx')
 $exts = $photoExts + $videoExts
 
 Write-Host "==========================================================" -ForegroundColor Cyan

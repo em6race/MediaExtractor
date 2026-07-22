@@ -89,10 +89,15 @@ echo -e "${CYAN}Scanning for photos and videos in $targetDir ...${NC}"
 # Find media files
 mapfile -d $'\0' filesToMove < <(find "$targetDir" -type f \( \
     -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o \
-    -iname "*.bmp" -o -iname "*.tiff" -o -iname "*.raw" -o -iname "*.webp" -o \
-    -iname "*.heic" -o -iname "*.mp4" -o -iname "*.avi" -o -iname "*.mkv" -o \
-    -iname "*.mov" -o -iname "*.wmv" -o -iname "*.flv" -o -iname "*.webm" -o \
-    -iname "*.m4v" -o -iname "*.3gp" \) -print0 2>/dev/null)
+    -iname "*.bmp" -o -iname "*.tiff" -o -iname "*.tif" -o -iname "*.raw" -o \
+    -iname "*.cr2" -o -iname "*.nef" -o -iname "*.orf" -o -iname "*.sr2" -o \
+    -iname "*.dng" -o -iname "*.psd" -o -iname "*.webp" -o -iname "*.heic" -o \
+    -iname "*.avif" -o -iname "*.jp2" -o -iname "*.ico" -o \
+    -iname "*.mp4" -o -iname "*.avi" -o -iname "*.mkv" -o -iname "*.mov" -o \
+    -iname "*.wmv" -o -iname "*.flv" -o -iname "*.webm" -o -iname "*.m4v" -o \
+    -iname "*.3gp" -o -iname "*.mpg" -o -iname "*.mpeg" -o -iname "*.m2ts" -o \
+    -iname "*.mts" -o -iname "*.ts" -o -iname "*.vob" -o -iname "*.rm" -o \
+    -iname "*.rmvb" -o -iname "*.asf" -o -iname "*.divx" \) -print0 2>/dev/null)
 
 totalFiles=${#filesToMove[@]}
 if [ "$totalFiles" -eq 0 ]; then
@@ -114,8 +119,8 @@ get_type() {
     local ext="${1##*.}"
     ext=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
     case "$ext" in
-        jpg|jpeg|png|gif|bmp|tiff|raw|webp|heic) echo "Photos" ;;
-        mp4|avi|mkv|mov|wmv|flv|webm|m4v|3gp) echo "Videos" ;;
+        jpg|jpeg|png|gif|bmp|tiff|tif|raw|cr2|nef|orf|sr2|dng|psd|webp|heic|avif|jp2|ico) echo "Photos" ;;
+        mp4|avi|mkv|mov|wmv|flv|webm|m4v|3gp|mpg|mpeg|m2ts|mts|ts|vob|rm|rmvb|asf|divx) echo "Videos" ;;
         *) echo "Other" ;;
     esac
 }
