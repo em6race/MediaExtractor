@@ -84,7 +84,8 @@ if ($targetDir.Length -le 3) {
 
 $parentDir = Split-Path $targetDir -Parent
 $folderName = Split-Path $targetDir -Leaf
-$saveBaseDir = Join-Path $parentDir "Saved_Media_$folderName"
+$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
+$saveBaseDir = Join-Path $parentDir "Saved_Media_$folderName`_$timestamp"
 
 $currentPart = 1
 $currentSize = 0L

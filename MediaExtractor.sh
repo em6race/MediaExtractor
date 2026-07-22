@@ -79,7 +79,8 @@ fi
 
 folderName=$(basename "$targetDir")
 parentDir=$(dirname "$targetDir")
-saveBaseDir="$parentDir/Saved_Media_$folderName"
+timestamp=$(date +"%Y%m%d_%H%M%S")
+saveBaseDir="$parentDir/Saved_Media_${folderName}_${timestamp}"
 
 currentPart=1
 currentSize=0
