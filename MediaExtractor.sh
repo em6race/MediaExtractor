@@ -195,7 +195,6 @@ for file in "${filesToMove[@]}"; do
 
     if [ "$skipFile" = true ]; then
         movedBytes=$((movedBytes + fileSize))
-        currentSize=$((currentSize + fileSize))
         if [ "$isCopy" = false ]; then
             rm -f "$file" 2>/dev/null
         fi
