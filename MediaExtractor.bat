@@ -127,6 +127,71 @@ foreach ($f in $filesToMove) { $totalBytes += $f.Length }
 
 Write-Host "Photos and videos found: $totalFiles" -ForegroundColor Green
 Write-Host "Total size: $([math]::Round($totalBytes / 1MB, 2)) MB" -ForegroundColor Green
+
+# --- Pre-download archiver if needed ---
+$script:portable7zr = $null
+if ($processArchives) {
+    $hasArchiver = (Test-Path "$env:ProgramFiles\7-Zip\7z.exe") -or
+                   (Test-Path "${env:ProgramFiles(x86)}\7-Zip\7z.exe") -or
+                   (Test-Path "$env:ProgramFiles\WinRAR\WinRAR.exe")
+    if (-not $hasArchiver) {
+        $toolsDir = Join-Path $saveBaseDir ".temp_tools"
+        New-Item -ItemType Directory -Path $toolsDir -Force | Out-Null
+        $script:portable7zr = Join-Path $toolsDir "7zr.exe"
+        if (-not (Test-Path $script:portable7zr)) {
+            Write-Host ""
+            Write-Host "  No archiver found on this PC." -ForegroundColor Yellow
+            Write-Host "  Downloading portable 7zr.exe (~600 KB) from repo..." -ForegroundColor Yellow
+            $url = "https://raw.githubusercontent.com/em6race/MediaExtractor/main/tools/7zr.exe"
+            $dlDone = $false
+            $dlOk = $false
+            try {
+                $wc = New-Object System.Net.WebClient
+                $wc.add_DownloadProgressChanged({
+                    param($s, $e)
+                    $pct = $e.ProgressPercentage
+                    $filled = [int]($pct / 5)
+                    $empty = 20 - $filled
+                    $bar = ("#" * $filled) + ("-" * $empty)
+                    $dlKB = [math]::Round($e.BytesReceived / 1KB)
+                    $totalKB = [math]::Round($e.TotalBytesToReceive / 1KB)
+                    Write-Host "`r  Downloading: [$bar] $pct% ($dlKB KB / $totalKB KB)   " -NoNewline -ForegroundColor Cyan
+                })
+                $wc.add_DownloadFileCompleted({
+                    param($s, $e)
+                    $script:dlDone = $true
+                    $script:dlOk = ($null -eq $e.Error -and -not $e.Cancelled)
+                })
+                $script:dlDone = $false
+                $script:dlOk = $false
+                $wc.DownloadFileAsync([uri]$url, $script:portable7zr)
+                while (-not $script:dlDone) { Start-Sleep -Milliseconds 100 }
+                Write-Host ""
+                if ($script:dlOk) {
+                    Write-Host "  Download complete! Will be removed after processing." -ForegroundColor Green
+                } else {
+                    Write-Host "  Download failed. RAR/7z archives will be skipped." -ForegroundColor Red
+                    $script:portable7zr = $null
+                }
+            } catch {
+                # Fallback for older PowerShell
+                try {
+                    Write-Host "`r  Downloading..." -NoNewline -ForegroundColor Cyan
+                    Invoke-WebRequest -Uri $url -OutFile $script:portable7zr -UseBasicParsing
+                    Write-Host " Done!" -ForegroundColor Green
+                } catch {
+                    Write-Host " Failed. RAR/7z archives will be skipped." -ForegroundColor Red
+                    $script:portable7zr = $null
+                }
+            }
+        } else {
+            Write-Host "  Using cached portable 7zr.exe." -ForegroundColor Cyan
+        }
+        Write-Host ""
+    }
+}
+# --- End pre-download ---
+
 Write-Host ""
 Write-Host ""
 Write-Host ""
@@ -194,26 +259,10 @@ while ($queue.Count -gt 0) {
                 } elseif (Test-Path "$env:ProgramFiles\WinRAR\WinRAR.exe") {
                     $exe = "$env:ProgramFiles\WinRAR\WinRAR.exe"
                 } else {
-                    # Download portable 7zr.exe from repo
-                    $toolsDir = Join-Path $saveBaseDir ".temp_tools"
-                    New-Item -ItemType Directory -Path $toolsDir -Force | Out-Null
-                    $portable7zr = Join-Path $toolsDir "7zr.exe"
-                    if (-not (Test-Path $portable7zr)) {
-                        try {
-                            [Console]::SetCursorPosition(0, $uiTop)
-                            Write-Host "Downloading 7zr.exe (portable, ~600KB)...                    " -ForegroundColor Yellow
-                        } catch {}
-                        $url = "https://raw.githubusercontent.com/em6race/MediaExtractor/main/tools/7zr.exe"
-                        try {
-                            $wc = New-Object System.Net.WebClient
-                            $wc.DownloadFile($url, $portable7zr)
-                        } catch {
-                            try {
-                                Invoke-WebRequest -Uri $url -OutFile $portable7zr -UseBasicParsing
-                            } catch {}
-                        }
+                    # Use pre-downloaded portable 7zr.exe (downloaded before main loop)
+                    if ($script:portable7zr -and (Test-Path $script:portable7zr)) {
+                        $exe = $script:portable7zr
                     }
-                    if (Test-Path $portable7zr) { $exe = $portable7zr }
                 }
                 
                 if ($exe) {

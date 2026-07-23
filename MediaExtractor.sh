@@ -131,38 +131,19 @@ get_type() {
     esac
 }
 
-# Get 7zz path (system or download portable from repo)
+# 7zz command path (set by pre-download block below)
 PORTABLE_7ZZ_PATH=""
+
 get_7zz() {
+    # Return system 7z if available, otherwise the pre-downloaded portable
     if command -v 7zz >/dev/null 2>&1; then
         echo "7zz"; return
     fi
     if command -v 7z >/dev/null 2>&1; then
         echo "7z"; return
     fi
-    # Need to download portable binary from repo
-    local toolsDir="$saveBaseDir/.temp_tools"
-    mkdir -p "$toolsDir"
-    local binaryName
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        binaryName="7zz-mac"
-    else
-        binaryName="7zz-linux"
-    fi
-    local portablePath="$toolsDir/$binaryName"
-    if [ ! -f "$portablePath" ]; then
-        printf "\033[K${YELLOW}Downloading $binaryName (portable, ~3-6MB)...${NC}\n"
-        printf "\033[1A"
-        local url="https://raw.githubusercontent.com/em6race/MediaExtractor/main/tools/$binaryName"
-        if command -v curl >/dev/null 2>&1; then
-            curl -fsSL -o "$portablePath" "$url" 2>/dev/null
-        elif command -v wget >/dev/null 2>&1; then
-            wget -q -O "$portablePath" "$url" 2>/dev/null
-        fi
-        chmod +x "$portablePath" 2>/dev/null
-    fi
-    if [ -f "$portablePath" ]; then
-        echo "$portablePath"
+    if [ -n "$PORTABLE_7ZZ_PATH" ] && [ -f "$PORTABLE_7ZZ_PATH" ]; then
+        echo "$PORTABLE_7ZZ_PATH"
     fi
 }
 
@@ -175,6 +156,53 @@ done
 totalMB=$(awk "BEGIN {printf \"%.2f\", $totalBytes/1048576}")
 echo -e "${GREEN}Photos and videos found: $totalFiles${NC}"
 echo -e "${GREEN}Total size: $totalMB MB${NC}"
+
+# --- Pre-download archiver if needed ---
+if [ "$processArchives" = true ]; then
+    if ! command -v 7zz >/dev/null 2>&1 && ! command -v 7z >/dev/null 2>&1; then
+        toolsDir="$saveBaseDir/.temp_tools"
+        mkdir -p "$toolsDir"
+        
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            binaryName="7zz-mac"
+        else
+            binaryName="7zz-linux"
+        fi
+        PORTABLE_7ZZ_PATH="$toolsDir/$binaryName"
+        
+        if [ ! -f "$PORTABLE_7ZZ_PATH" ]; then
+            echo -e ""
+            echo -e "${YELLOW}  No archiver found on this system.${NC}"
+            echo -e "${YELLOW}  Downloading portable $binaryName from repo...${NC}"
+            url="https://raw.githubusercontent.com/em6race/MediaExtractor/main/tools/$binaryName"
+            
+            if command -v curl >/dev/null 2>&1; then
+                curl -# -o "$PORTABLE_7ZZ_PATH" "$url"
+                dlExit=$?
+            elif command -v wget >/dev/null 2>&1; then
+                wget --show-progress -q -O "$PORTABLE_7ZZ_PATH" "$url"
+                dlExit=$?
+            else
+                echo -e "${RED}  No curl or wget found. RAR/7z archives will be skipped.${NC}"
+                dlExit=1
+            fi
+            
+            if [ $dlExit -eq 0 ]; then
+                chmod +x "$PORTABLE_7ZZ_PATH" 2>/dev/null
+                echo -e "${GREEN}  Download complete! Will be removed after processing.${NC}"
+            else
+                echo -e "${RED}  Download failed. RAR/7z archives will be skipped.${NC}"
+                PORTABLE_7ZZ_PATH=""
+                rm -f "$PORTABLE_7ZZ_PATH" 2>/dev/null
+            fi
+        else
+            echo -e "${CYAN}  Using cached portable $binaryName.${NC}"
+        fi
+        echo ""
+    fi
+fi
+# --- End pre-download ---
+
 spinnerChars=('|' '/' '-' '\')
 spinnerIdx=0
 lastProcessed=()
