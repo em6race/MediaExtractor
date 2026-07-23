@@ -1,5 +1,7 @@
 # 📁 Media Extractor
 
+🇺🇦 [Українська версія](#-media-extractor-1)
+
 A script that scans a folder full of junk, pulls out all photos and videos, and neatly organizes them — with a real-time progress bar and ETA right in the terminal.
 
 ## ⬇️ Download
@@ -60,6 +62,8 @@ The output is saved next to your selected folder as `Saved_Media_[FolderName]_[T
 
 ---
 ---
+
+<a id="-media-extractor-1"></a>
 
 # 📁 Media Extractor
 
