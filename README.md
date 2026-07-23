@@ -21,7 +21,7 @@ A script that scans a folder full of junk, pulls out all photos and videos, and 
 - **Split by size** — automatically split output into parts (e.g. for flash drives)
 - **Sort by year** — optionally organize files into subfolders by year
 - **Archive support** — optionally extract photos/videos from `.zip`, `.rar`, `.7z`, `.tar` archives (even archives inside archives, one level deep)
-- **Auto-download archiver** — if no archiver is installed and you need one, the script downloads a tiny portable tool (~600 KB) automatically and removes it when done
+- **Auto-download archiver** — if no archiver is installed and you need one, the script downloads a tiny portable tool (~600 KB) automatically and removes it when done. *(Note: These binaries are safe, open-source, and sourced directly from the official 7-Zip GitHub repository. They are 100% virus-free.)*
 - **Live progress bar** — shows real-time progress, speed, and ETA in the terminal
 - **Duplicate protection** — skips files that already exist with the same size
 - **Safe cleanup** — asks for confirmation before permanently deleting the original folder
@@ -86,7 +86,7 @@ The output is saved next to your selected folder as `Saved_Media_[FolderName]_[T
 - **Розбивка на частини** — автоматично ділить вихідні файли на частини потрібного розміру (наприклад, для флешок)
 - **Сортування за роком** — за бажанням розкладає файли по підпапках за роком
 - **Підтримка архівів** — за бажанням витягує фото/відео з архівів `.zip`, `.rar`, `.7z`, `.tar` (навіть архів в архіві — на один рівень вглиб)
-- **Автозавантаження архіватора** — якщо на ПК немає архіватора, але він потрібен, скрипт сам завантажить крихітну портативну програму (~600 КБ) і видалить її після роботи
+- **Автозавантаження архіватора** — якщо на ПК немає архіватора, але він потрібен, скрипт сам завантажить крихітну портативну програму (~600 КБ) і видалить її після роботи. *(Примітка: ці файли безпечні, мають відкритий вихідний код і завантажуються напряму з офіційного репозиторію 7-Zip на GitHub. На 100% без вірусів.)*
 - **Прогрес-бар у реальному часі** — відображає прогрес, швидкість і ETA прямо в терміналі
 - **Захист від дублів** — пропускає файли, які вже є з однаковим розміром
 - **Безпечне очищення** — запитує підтвердження перед остаточним видаленням оригінальної папки
