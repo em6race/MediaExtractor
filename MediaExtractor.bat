@@ -21,7 +21,6 @@ $photoExts = @('.jpg','.jpeg','.png','.gif','.bmp','.tiff','.tif','.raw','.cr2',
 $videoExts = @('.mp4','.avi','.mkv','.mov','.wmv','.flv','.webm','.m4v','.3gp','.mpg','.mpeg','.m2ts','.mts','.ts','.vob','.rm','.rmvb','.asf','.divx')
 $mediaExts = $photoExts + $videoExts
 $archiveExts = @('.zip', '.rar', '.7z', '.tar')
-$exts = $mediaExts + $archiveExts
 
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "   Media Extractor Script                                 " -ForegroundColor Cyan
@@ -29,7 +28,7 @@ Write-Host "   With logs, chunking, year sorting, and media type      " -Foregro
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host ""
 
-Write-Host "[1/4] " -NoNewline -ForegroundColor Yellow
+Write-Host "[1/5] " -NoNewline -ForegroundColor Yellow
 $copyChoice = Read-Host "Do you want to COPY files instead of moving them? (Y/N, default N)"
 $isCopy = ($copyChoice -match '^[Yy]')
 if ($isCopy) {
@@ -38,13 +37,13 @@ if ($isCopy) {
     Write-Host "-> Files will be MOVED. Original files will be removed from the source folder." -ForegroundColor Green
 }
 
-Write-Host "[2/4] " -NoNewline -ForegroundColor Yellow
+Write-Host "[2/5] " -NoNewline -ForegroundColor Yellow
 $splitChoice = Read-Host "Do you want to split the saved files into parts by size? (Y/N, default N)"
 $maxSize = [long]::MaxValue
 $isSplitting = $false
 
 if ($splitChoice -match '^[Yy]') {
-    Write-Host "[3/4] " -NoNewline -ForegroundColor Yellow
+    Write-Host "[3/5] " -NoNewline -ForegroundColor Yellow
     $sizeInput = Read-Host "Enter the maximum size for each part in Gigabytes (e.g., 5, 10, 16)"
     $sizeGB = 0
     if ([int]::TryParse($sizeInput, [ref]$sizeGB) -and $sizeGB -gt 0) {
@@ -58,13 +57,28 @@ if ($splitChoice -match '^[Yy]') {
     Write-Host "-> Files will NOT be split." -ForegroundColor Green
 }
 
-Write-Host "[4/4] " -NoNewline -ForegroundColor Yellow
+Write-Host "[4/5] " -NoNewline -ForegroundColor Yellow
 $sortChoice = Read-Host "Do you want to sort files into subfolders by Year? (Y/N, default N)"
 $isSorting = ($sortChoice -match '^[Yy]')
 if ($isSorting) {
     Write-Host "-> Files will be sorted by Year." -ForegroundColor Green
 } else {
     Write-Host "-> Files will NOT be sorted by Year." -ForegroundColor Green
+}
+
+Write-Host "[5/5] " -NoNewline -ForegroundColor Yellow
+$archiveChoice = Read-Host "Do you want to extract and process media from archives? (Y/N, default N)"
+$processArchives = ($archiveChoice -match '^[Yy]')
+if ($processArchives) {
+    Write-Host "-> Archives will be processed." -ForegroundColor Green
+} else {
+    Write-Host "-> Archives will be IGNORED." -ForegroundColor Green
+}
+
+if ($processArchives) {
+    $exts = $mediaExts + $archiveExts
+} else {
+    $exts = $mediaExts
 }
 
 Write-Host ""
@@ -393,7 +407,7 @@ if ($isSplitting -and $currentPart -gt 1) {
 if (-not $isCopy) {
     Write-Host "--------------------------------------------------------" -ForegroundColor Cyan
     Write-Host "WARNING: Only junk files remain in the old folder ($targetDir)." -ForegroundColor Red
-    Write-Host "[5/5] Do you want to permanently delete the original folder (containing only junk)? (Y/N, default N): " -NoNewline -ForegroundColor Yellow
+    Write-Host "[6/6] Do you want to permanently delete the original folder (containing only junk)? (Y/N, default N): " -NoNewline -ForegroundColor Yellow
 
     $response = Read-Host ""
     if ($response -match '^[Yy]') {
