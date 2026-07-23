@@ -9,7 +9,7 @@ copy /y "%~f0" "%ps1%" >nul
 :: Run PowerShell code located below the #PS_START label
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$global:scriptDir = '%~dp0'.TrimEnd('\'); $s = @(Get-Content -Path '%ps1%' -Encoding UTF8); $idx = [array]::IndexOf($s, '#PS_START'); if ($idx -ge 0) { iex ($s[$idx..$s.Length] -join [Environment]::NewLine) }"
 
-del "%ps1%"
+del "%ps1%" >nul 2>&1
 pause
 goto :eof
 
@@ -486,7 +486,7 @@ if (-not $isCopy) {
     Write-Host "WARNING: Only junk files remain in the old folder ($targetDir)." -ForegroundColor Red
     Write-Host "[6/6] Do you want to permanently delete the original folder (containing only junk)? (Y/N, default N): " -NoNewline -ForegroundColor Yellow
 
-    $response = Read-Host ""
+    $response = Read-Host
     if ($response -match '^[Yy]') {
         Write-Host "Deleting junk..." -ForegroundColor Cyan
         Remove-Item -Path $targetDir -Recurse -Force
