@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Media Extractor for macOS and Linux
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Colors
 CYAN='\033[0;36m'
@@ -171,29 +172,37 @@ if [ "$processArchives" = true ]; then
         PORTABLE_7ZZ_PATH="$toolsDir/$binaryName"
         
         if [ ! -f "$PORTABLE_7ZZ_PATH" ]; then
-            echo -e ""
-            echo -e "${YELLOW}  No archiver found on this system.${NC}"
-            echo -e "${YELLOW}  Downloading portable $binaryName from repo...${NC}"
-            url="https://raw.githubusercontent.com/em6race/MediaExtractor/main/tools/$binaryName"
-            
-            if command -v curl >/dev/null 2>&1; then
-                curl -# -o "$PORTABLE_7ZZ_PATH" "$url"
-                dlExit=$?
-            elif command -v wget >/dev/null 2>&1; then
-                wget --show-progress -q -O "$PORTABLE_7ZZ_PATH" "$url"
-                dlExit=$?
-            else
-                echo -e "${RED}  No curl or wget found. RAR/7z archives will be skipped.${NC}"
-                dlExit=1
-            fi
-            
-            if [ $dlExit -eq 0 ]; then
+            # First check local tools/ folder (next to the script, e.g. full repo download)
+            localTool="$SCRIPT_DIR/tools/$binaryName"
+            if [ -f "$localTool" ]; then
+                cp "$localTool" "$PORTABLE_7ZZ_PATH"
                 chmod +x "$PORTABLE_7ZZ_PATH" 2>/dev/null
-                echo -e "${GREEN}  Download complete! Will be removed after processing.${NC}"
+                echo -e "${CYAN}  Found local tools/$binaryName, using it.${NC}"
             else
-                echo -e "${RED}  Download failed. RAR/7z archives will be skipped.${NC}"
-                PORTABLE_7ZZ_PATH=""
-                rm -f "$PORTABLE_7ZZ_PATH" 2>/dev/null
+                echo -e ""
+                echo -e "${YELLOW}  No archiver found on this system.${NC}"
+                echo -e "${YELLOW}  Downloading portable $binaryName from repo...${NC}"
+                url="https://raw.githubusercontent.com/em6race/MediaExtractor/main/tools/$binaryName"
+                
+                if command -v curl >/dev/null 2>&1; then
+                    curl -# -o "$PORTABLE_7ZZ_PATH" "$url"
+                    dlExit=$?
+                elif command -v wget >/dev/null 2>&1; then
+                    wget --show-progress -q -O "$PORTABLE_7ZZ_PATH" "$url"
+                    dlExit=$?
+                else
+                    echo -e "${RED}  No curl or wget found. RAR/7z archives will be skipped.${NC}"
+                    dlExit=1
+                fi
+                
+                if [ $dlExit -eq 0 ]; then
+                    chmod +x "$PORTABLE_7ZZ_PATH" 2>/dev/null
+                    echo -e "${GREEN}  Download complete! Will be removed after processing.${NC}"
+                else
+                    echo -e "${RED}  Download failed. RAR/7z archives will be skipped.${NC}"
+                    PORTABLE_7ZZ_PATH=""
+                    rm -f "$PORTABLE_7ZZ_PATH" 2>/dev/null
+                fi
             fi
         else
             echo -e "${CYAN}  Using cached portable $binaryName.${NC}"

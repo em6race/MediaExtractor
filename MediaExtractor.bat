@@ -7,7 +7,7 @@ set "ps1=%temp%\media_extract_%random%.ps1"
 copy /y "%~f0" "%ps1%" >nul
 
 :: Run PowerShell code located below the #PS_START label
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$s = @(Get-Content -Path '%ps1%' -Encoding UTF8); $idx = [array]::IndexOf($s, '#PS_START'); if ($idx -ge 0) { iex ($s[$idx..$s.Length] -join [Environment]::NewLine) }"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$global:scriptDir = '%~dp0'.TrimEnd('\'); $s = @(Get-Content -Path '%ps1%' -Encoding UTF8); $idx = [array]::IndexOf($s, '#PS_START'); if ($idx -ge 0) { iex ($s[$idx..$s.Length] -join [Environment]::NewLine) }"
 
 del "%ps1%"
 pause
