@@ -185,13 +185,40 @@ while ($queue.Count -gt 0) {
             } elseif ($ext -eq '.tar') {
                 try { tar -xf $file.FullName -C $tempPath; if ($LASTEXITCODE -eq 0) { $success = $true } } catch {}
             } elseif ($ext -eq '.rar' -or $ext -eq '.7z') {
-                if (Test-Path "$env:ProgramFiles-Zipz.exe") {
-                    $exe = "$env:ProgramFiles-Zipz.exe"
-                    $proc = Start-Process -FilePath $exe -ArgumentList "x `"$($file.FullName)`" -o`"$tempPath`" -y -p-" -Wait -NoNewWindow -PassThru
-                    if ($proc.ExitCode -eq 0) { $success = $true }
+                # Find 7-Zip or WinRAR, or download portable 7zr.exe from repo
+                $exe = $null
+                if (Test-Path "$env:ProgramFiles\7-Zip\7z.exe") {
+                    $exe = "$env:ProgramFiles\7-Zip\7z.exe"
+                } elseif (Test-Path "${env:ProgramFiles(x86)}\7-Zip\7z.exe") {
+                    $exe = "${env:ProgramFiles(x86)}\7-Zip\7z.exe"
                 } elseif (Test-Path "$env:ProgramFiles\WinRAR\WinRAR.exe") {
                     $exe = "$env:ProgramFiles\WinRAR\WinRAR.exe"
-                    $proc = Start-Process -FilePath $exe -ArgumentList "x -y -p- `"$($file.FullName)`" `"$tempPath\`"" -Wait -NoNewWindow -PassThru
+                } else {
+                    # Download portable 7zr.exe from repo
+                    $toolsDir = Join-Path $saveBaseDir ".temp_tools"
+                    New-Item -ItemType Directory -Path $toolsDir -Force | Out-Null
+                    $portable7zr = Join-Path $toolsDir "7zr.exe"
+                    if (-not (Test-Path $portable7zr)) {
+                        try {
+                            [Console]::SetCursorPosition(0, $uiTop)
+                            Write-Host "Downloading 7zr.exe (portable, ~600KB)...                    " -ForegroundColor Yellow
+                        } catch {}
+                        $url = "https://raw.githubusercontent.com/em6race/MediaExtractor/main/tools/7zr.exe"
+                        try {
+                            $wc = New-Object System.Net.WebClient
+                            $wc.DownloadFile($url, $portable7zr)
+                        } catch {
+                            try {
+                                Invoke-WebRequest -Uri $url -OutFile $portable7zr -UseBasicParsing
+                            } catch {}
+                        }
+                    }
+                    if (Test-Path $portable7zr) { $exe = $portable7zr }
+                }
+                
+                if ($exe) {
+                    $argStr = "x `"$($file.FullName)`" -o`"$tempPath`" -y -p-"
+                    $proc = Start-Process -FilePath $exe -ArgumentList $argStr -Wait -NoNewWindow -PassThru
                     if ($proc.ExitCode -eq 0) { $success = $true }
                 }
             }
@@ -396,6 +423,7 @@ try { [Console]::CursorVisible = $true } catch {}
 $stopwatch.Stop()
 
 Remove-Item -Path (Join-Path $saveBaseDir ".temp_extract") -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path (Join-Path $saveBaseDir ".temp_tools") -Recurse -Force -ErrorAction SilentlyContinue
 
 Write-Host "--------------------------------------------------------" -ForegroundColor Cyan
 Write-Host "Transfer completed!" -ForegroundColor Green

@@ -131,6 +131,41 @@ get_type() {
     esac
 }
 
+# Get 7zz path (system or download portable from repo)
+PORTABLE_7ZZ_PATH=""
+get_7zz() {
+    if command -v 7zz >/dev/null 2>&1; then
+        echo "7zz"; return
+    fi
+    if command -v 7z >/dev/null 2>&1; then
+        echo "7z"; return
+    fi
+    # Need to download portable binary from repo
+    local toolsDir="$saveBaseDir/.temp_tools"
+    mkdir -p "$toolsDir"
+    local binaryName
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        binaryName="7zz-mac"
+    else
+        binaryName="7zz-linux"
+    fi
+    local portablePath="$toolsDir/$binaryName"
+    if [ ! -f "$portablePath" ]; then
+        printf "\033[K${YELLOW}Downloading $binaryName (portable, ~3-6MB)...${NC}\n"
+        printf "\033[1A"
+        local url="https://raw.githubusercontent.com/em6race/MediaExtractor/main/tools/$binaryName"
+        if command -v curl >/dev/null 2>&1; then
+            curl -fsSL -o "$portablePath" "$url" 2>/dev/null
+        elif command -v wget >/dev/null 2>&1; then
+            wget -q -O "$portablePath" "$url" 2>/dev/null
+        fi
+        chmod +x "$portablePath" 2>/dev/null
+    fi
+    if [ -f "$portablePath" ]; then
+        echo "$portablePath"
+    fi
+}
+
 totalBytes=0
 for f in "${filesToMove[@]}"; do
     size=$(get_size "$f")
