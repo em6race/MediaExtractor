@@ -19,7 +19,9 @@ Add-Type -AssemblyName System.Windows.Forms
 
 $photoExts = @('.jpg','.jpeg','.png','.gif','.bmp','.tiff','.tif','.raw','.cr2','.nef','.orf','.sr2','.dng','.psd','.webp','.heic','.avif','.jp2','.ico')
 $videoExts = @('.mp4','.avi','.mkv','.mov','.wmv','.flv','.webm','.m4v','.3gp','.mpg','.mpeg','.m2ts','.mts','.ts','.vob','.rm','.rmvb','.asf','.divx')
-$exts = $photoExts + $videoExts
+$mediaExts = $photoExts + $videoExts
+$archiveExts = @('.zip', '.rar', '.7z', '.tar')
+$exts = $mediaExts + $archiveExts
 
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "   Media Extractor Script                                 " -ForegroundColor Cyan
@@ -138,7 +140,93 @@ $lastUiUpdate = [DateTime]::Now
 $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 $movedBytes = 0L
 
-foreach ($file in $filesToMove) {
+$queue = New-Object System.Collections.Generic.Queue[PSCustomObject]
+foreach ($f in $filesToMove) {
+    $queue.Enqueue([pscustomobject]@{ File = $f; Depth = 0; IsTemp = $false })
+}
+
+while ($queue.Count -gt 0) {
+    $item = $queue.Dequeue()
+    $file = $item.File
+    $depth = $item.Depth
+    $isTemp = $item.IsTemp
+    
+    $ext = $file.Extension.ToLower()
+
+
+    if ($archiveExts -contains $ext) {
+        if ($depth -le 1) {
+            try {
+                [Console]::SetCursorPosition(0, $uiTop)
+                Write-Host "Extracting $($file.Name)...                                        " -ForegroundColor Magenta
+            } catch {}
+            
+            $tempDirName = [guid]::NewGuid().ToString()
+            $tempPath = Join-Path $saveBaseDir ".temp_extract\$tempDirName"
+            New-Item -ItemType Directory -Path $tempPath -Force | Out-Null
+            
+            $success = $false
+            if ($ext -eq '.zip') {
+                try { Expand-Archive -Path $file.FullName -DestinationPath $tempPath -Force -ErrorAction Stop; $success = $true } catch {}
+            } elseif ($ext -eq '.tar') {
+                try { tar -xf $file.FullName -C $tempPath; if ($LASTEXITCODE -eq 0) { $success = $true } } catch {}
+            } elseif ($ext -eq '.rar' -or $ext -eq '.7z') {
+                if (Test-Path "$env:ProgramFiles-Zipz.exe") {
+                    $exe = "$env:ProgramFiles-Zipz.exe"
+                    $proc = Start-Process -FilePath $exe -ArgumentList "x `"$($file.FullName)`" -o`"$tempPath`" -y -p-" -Wait -NoNewWindow -PassThru
+                    if ($proc.ExitCode -eq 0) { $success = $true }
+                } elseif (Test-Path "$env:ProgramFiles\WinRAR\WinRAR.exe") {
+                    $exe = "$env:ProgramFiles\WinRAR\WinRAR.exe"
+                    $proc = Start-Process -FilePath $exe -ArgumentList "x -y -p- `"$($file.FullName)`" `"$tempPath\`"" -Wait -NoNewWindow -PassThru
+                    if ($proc.ExitCode -eq 0) { $success = $true }
+                }
+            }
+            
+            if ($success) {
+                $extractedFiles = @(Get-ChildItem -Path $tempPath -Recurse -Force | Where-Object { 
+                    -not $_.PSIsContainer -and ($exts -contains $_.Extension.ToLower()) 
+                })
+                foreach ($ef in $extractedFiles) {
+                    $queue.Enqueue([pscustomobject]@{ File = $ef; Depth = ($depth + 1); IsTemp = $true })
+                    $totalBytes += $ef.Length
+                    $totalFiles++
+                }
+                $totalBytes -= $file.Length
+                $totalFiles--
+                
+                if (-not $isCopy -and -not $isTemp) {
+                    Remove-Item -Path $file.FullName -Force -ErrorAction SilentlyContinue
+                }
+                continue
+            }
+        }
+        
+        $archiveDir = Join-Path $saveBaseDir "Archives"
+        if (-not (Test-Path $archiveDir)) {
+            New-Item -ItemType Directory -Path $archiveDir -Force | Out-Null
+        }
+        $destPath = Join-Path $archiveDir $file.Name
+        $skipFile = $false
+        $counter = 1
+        while (Test-Path $destPath) {
+            $existingFile = Get-Item $destPath
+            if ($existingFile.Length -eq $file.Length) { $skipFile = $true; break }
+            $destPath = Join-Path $archiveDir "$baseName`_$counter$extension"
+            $counter++
+        }
+        
+        if ($skipFile) {
+            $movedBytes += $file.Length
+            if (-not $isCopy -and -not $isTemp) { Remove-Item -Path $file.FullName -Force -ErrorAction SilentlyContinue }
+        } else {
+            try {
+                if ($isCopy -and -not $isTemp) { Copy-Item -Path $file.FullName -Destination $destPath -Force -ErrorAction SilentlyContinue }
+                else { Move-Item -Path $file.FullName -Destination $destPath -Force -ErrorAction SilentlyContinue }
+                $movedBytes += $file.Length
+                $currentSize += $file.Length
+            } catch {}
+        }
+    } else {
     # Splitting logic
     if (($currentSize + $file.Length) -gt $maxSize -and $currentSize -gt 0) {
         $currentPart++
@@ -181,8 +269,7 @@ foreach ($file in $filesToMove) {
     }
 
     $destPath = Join-Path $partDir $file.Name
-    $baseName = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
-    $extension = [System.IO.Path]::GetExtension($file.Name)
+
     
     $skipFile = $false
     $counter = 1
@@ -206,7 +293,7 @@ foreach ($file in $filesToMove) {
     }
 
     try {
-        if ($isCopy) {
+        if ($isCopy -and -not $isTemp) {
             Copy-Item -Path $file.FullName -Destination $destPath -Force -ErrorAction SilentlyContinue
         } else {
             Move-Item -Path $file.FullName -Destination $destPath -Force -ErrorAction SilentlyContinue
@@ -289,8 +376,12 @@ foreach ($file in $filesToMove) {
     }
 }
 
+}
+
 try { [Console]::CursorVisible = $true } catch {}
 $stopwatch.Stop()
+
+Remove-Item -Path (Join-Path $saveBaseDir ".temp_extract") -Recurse -Force -ErrorAction SilentlyContinue
 
 Write-Host "--------------------------------------------------------" -ForegroundColor Cyan
 Write-Host "Transfer completed!" -ForegroundColor Green
