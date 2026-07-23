@@ -143,6 +143,8 @@ echo -e "${GREEN}Total size: $totalMB MB${NC}"
 spinnerChars=('|' '/' '-' '\')
 spinnerIdx=0
 lastProcessed=()
+lastUiSecond=$SECONDS
+lastUiBytes=0
 
 # Setup empty lines for UI
 for i in {1..12}; do echo ""; done
@@ -271,8 +273,13 @@ for file in "${filesToMove[@]}"; do
     fi
     
     # UI Drawing
-    # Move cursor up 12 lines
-    printf "\033[12A"
+    bytesSinceLastUi=$((movedBytes - lastUiBytes))
+    if [ "$bytesSinceLastUi" -gt 5242880 ] || [ "$SECONDS" -ne "$lastUiSecond" ] || [ "$movedBytes" -eq "$totalBytes" ]; then
+        lastUiSecond=$SECONDS
+        lastUiBytes=$movedBytes
+
+        # Move cursor up 12 lines
+        printf "\033[12A"
     
     printf "\033[K${CYAN}Starting transfer...${NC}\n"
     printf "\033[K${CYAN}--------------------------------------------------------${NC}\n"
@@ -289,6 +296,7 @@ for file in "${filesToMove[@]}"; do
             printf "\033[K\n"
         fi
     done
+    fi
 done
 
 echo ""

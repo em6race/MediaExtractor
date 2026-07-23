@@ -133,6 +133,7 @@ try {
 $spinnerChars = @('|', '/', '-', '\')
 $spinnerIdx = 0
 $lastProcessed = @()
+$lastUiUpdate = [DateTime]::Now
 
 $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 $movedBytes = 0L
@@ -255,8 +256,11 @@ foreach ($file in $filesToMove) {
     $spinnerIdx++
     
     # Draw UI
-    try {
-        [Console]::SetCursorPosition(0, $uiTop)
+    $now = [DateTime]::Now
+    if (($now - $lastUiUpdate).TotalMilliseconds -gt 100 -or $movedBytes -eq $totalBytes) {
+        $lastUiUpdate = $now
+        try {
+            [Console]::SetCursorPosition(0, $uiTop)
         
         Write-Host "Starting transfer...                                        " -ForegroundColor Cyan
         Write-Host "--------------------------------------------------------    " -ForegroundColor Cyan
@@ -278,9 +282,10 @@ foreach ($file in $filesToMove) {
                 Write-Host "                                                        "
             }
         }
-    } catch {
-        # Fallback if console manipulation fails (e.g., redirected output)
-        Write-Host "[$spinChar] $percent% | ETA: $etaStr | File: $($file.Name)" -ForegroundColor Cyan
+        } catch {
+            # Fallback if console manipulation fails (e.g., redirected output)
+            Write-Host "[$spinChar] $percent% | ETA: $etaStr | File: $($file.Name)" -ForegroundColor Cyan
+        }
     }
 }
 
